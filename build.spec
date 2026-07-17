@@ -3,6 +3,10 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 block_cipher = None
 
+import os
+import sys
+import glob
+
 # Собираем скрытые импорты для CTranslate2 / faster-whisper и других библиотек
 hidden_imports = collect_submodules('faster_whisper') + [
     'sounddevice', 
@@ -14,10 +18,21 @@ hidden_imports = collect_submodules('faster_whisper') + [
 # Копируем бинарные зависимости (словари, токены)
 datas = collect_data_files('faster_whisper')
 
+# Собираем DLL NVIDIA (cuBLAS, cuDNN) из окружения для standalone CUDA
+nvidia_binaries = []
+venv_site = os.path.join(sys.prefix, "Lib", "site-packages")
+nvidia_path = os.path.join(venv_site, "nvidia")
+if os.path.exists(nvidia_path):
+    for lib in os.listdir(nvidia_path):
+        bin_path = os.path.join(nvidia_path, lib, "bin")
+        if os.path.exists(bin_path):
+            for dll in glob.glob(os.path.join(bin_path, "*.dll")):
+                nvidia_binaries.append((dll, 'nvidia/bin'))
+
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=[],
+    binaries=nvidia_binaries,
     datas=datas,
     hiddenimports=hidden_imports,
     hookspath=[],
