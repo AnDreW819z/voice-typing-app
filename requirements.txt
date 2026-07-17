@@ -4,3 +4,7 @@ numpy==1.26.4
 keyboard==0.13.5
 pyautogui==0.9.54
 pydantic==2.8.2
+
+# Ускорение CUDA на Windows без глобальной установки CUDA Toolkit
+nvidia-cublas-cu12; platform_system=="Windows"
+nvidia-cudnn-cu12; platform_system=="Windows"
